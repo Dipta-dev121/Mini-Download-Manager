@@ -15,7 +15,7 @@ def download_file(url):
 
     # Requesting the url response
     try:
-        response = requests.get(url)
+        response = requests.get(url, stream=True)
         response.raise_for_status()
 
         #Numbering duplicate filenames
@@ -27,7 +27,9 @@ def download_file(url):
 
         # writing the response content into file
         with open(f"../downloads/{filename}", "wb") as file:
-            file.write(response.content)
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    file.write(chunk)
 
         print("Download Complete!")
     except requests.exceptions.RequestException as error:
