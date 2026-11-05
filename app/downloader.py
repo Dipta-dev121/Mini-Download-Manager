@@ -17,6 +17,7 @@ def download_file(url):
     try:
         response = requests.get(url, stream=True)
         response.raise_for_status()
+        total_size=int(response.headers.get("content-length",0))
 
         #Numbering duplicate filenames
         base, extension = os.path.splitext(filename)
@@ -26,10 +27,17 @@ def download_file(url):
             counter+=1
 
         # writing the response content into file
+        downloaded_size=0
         with open(f"../downloads/{filename}", "wb") as file:
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
                     file.write(chunk)
+
+                    downloaded_size+=len(chunk)
+
+                    if total_size>0:
+                        progress=(downloaded_size/total_size)*100
+                        print(f"\rDownload Progress: {progress:.2f}%",end="")
 
         print("Download Complete!")
     except requests.exceptions.RequestException as error:
